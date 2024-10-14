@@ -1,7 +1,14 @@
 # Course-AI-Design-Project
 
 ## Project Overview
-This project involves training a language model. You have the freedom to choose your own dataset, model architecture, and training method. The goal is to create a model that can generate 10 different coherent and unambiguous sentences.
+This project involves training a language model for AI-Design Course(SME637003.01) in Fudan University.
+
+Group Members:
+
+| Name   | Student Number |
+| ------ | -------------- |
+| 郑志宇 | 24112020118    |
+| 汤政   |                |
 
 ## Requirements
 - The model must be able to run successfully.
