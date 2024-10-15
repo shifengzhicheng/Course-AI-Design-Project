@@ -8,7 +8,7 @@ Group Members:
 | Name   | Student Number |
 | ------ | -------------- |
 | 郑志宇 | 24112020118    |
-| 汤政   |                |
+| 汤政   | 24212020169     |
 
 ## Requirements
 - The model must be able to run successfully.
