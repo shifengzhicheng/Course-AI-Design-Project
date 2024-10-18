@@ -69,11 +69,11 @@ if __name__ == '__main__':
 
 
     train_dataset = TextDataset(train_texts, tokenizer)
-    train_dataloader = DataLoader(train_dataset, batch_size=32, shuffle=True)
+    train_dataloader = DataLoader(train_dataset, batch_size=40, shuffle=True, num_workers=4)
     print("Training data prepared.")
 
     val_dataset = TextDataset(val_texts, tokenizer)
-    val_dataloader = DataLoader(val_dataset, batch_size=32, shuffle=True)
+    val_dataloader = DataLoader(val_dataset, batch_size=40, shuffle=True, num_workers=1)
     print("Validation data prepared.")
 
     vocab_size = len(tokenizer)
@@ -82,7 +82,7 @@ if __name__ == '__main__':
     n_head = 8  # attention head
     print("Initializing model...")
     model = NanoGPT(vocab_size, n_embd, n_layer, n_head).to(device)
-    optimizer = torch.optim.AdamW(model.parameters(), lr=5e-4)
+    optimizer = torch.optim.AdamW(model.parameters(), lr=5e-5, weight_decay=1e-3)
     scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.5)
     loss_fn = nn.CrossEntropyLoss()
     print("Model initialized.")
