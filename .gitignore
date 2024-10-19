@@ -150,7 +150,7 @@ cython_debug/
 
 # TensorBoard log files
 logs/
-events.out.tfevents.*
+#events.out.tfevents.*
 
 # Temporary files
 *.tmp
