@@ -4,13 +4,26 @@ import torch.nn as nn
 import random
 import numpy as np
 from torch.utils.data import Dataset, DataLoader
-from transformers import GPT2Tokenizer
+from transformers import GPT2Tokenizer, GPT2Config
 from tqdm import tqdm
 from torch.utils.tensorboard import SummaryWriter
 from datasets import load_dataset, load_from_disk
 
+# 加载 GPT-2 配置
+config = GPT2Config(
+    vocab_size=50258,  # GPT-2 的词汇表大小
+    n_positions=1024,  # 设置位置编码的最大长度
+    n_embd=256,        # 隐藏层大小
+    n_layer=4,        # Transformer 层数
+    n_head=4          # 注意力头的数量
+)
+
+def generate_square_subsequent_mask(sz):
+    mask = torch.triu(torch.ones(sz, sz), diagonal=1).bool()
+    return mask
+
 class NanoGPT(nn.Module):
-    def __init__(self, vocab_size, n_embd, n_layer, n_head):
+    def __init__(self, config):
         """
         Initializes the NanoGPT model.
 
@@ -27,52 +40,34 @@ class NanoGPT(nn.Module):
             head (nn.Linear): Linear layer to project the transformer output to vocabulary size.
         """
         super(NanoGPT, self).__init__()
-        self.embedding = nn.Embedding(vocab_size, n_embd)  # Embedding layer to convert token IDs to embeddings
-        self.transformer = nn.Transformer(
-            d_model=n_embd,
-            nhead=n_head,
-            num_encoder_layers=n_layer,
-            num_decoder_layers=n_layer,
-            batch_first=True
-        )
-        self.ln_f = nn.LayerNorm(n_embd)
-        self.head = nn.Linear(n_embd, vocab_size)
-    def forward(self, x):
-        """
-        Perform a forward pass through the model.
+        self.config = config
+        self.embedding = nn.Embedding(config.vocab_size, config.n_embd)
+        self.positional_encoding = nn.Parameter(torch.zeros(1, config.n_positions, config.n_embd))
+        nn.init.normal_(self.positional_encoding, mean=0.0, std=0.02)  # 初始化位置编码
+        self.transformer_layers = nn.ModuleList([
+            nn.TransformerEncoderLayer(
+                d_model=config.n_embd,
+                nhead=config.n_head,
+                dim_feedforward=4 * config.n_embd,
+                dropout=0.1,
+                activation='gelu'
+            )
+            for _ in range(config.n_layer)
+        ])
+        self.ln_f = nn.LayerNorm(config.n_embd)
+        self.fc_out = nn.Linear(config.n_embd, config.vocab_size)
+    def forward(self, input_ids):
+        input_ids = input_ids.long()
+        embeddings = self.embedding(input_ids) + self.positional_encoding[:, :input_ids.size(1), :]
+        embeddings = embeddings.transpose(0, 1)  # (seq_len, batch_size, embed_dim)
+        seq_length = embeddings.size(0)
+        mask = generate_square_subsequent_mask(seq_length).to(embeddings.device)
 
-        Args:
-            x (torch.Tensor): Input tensor of shape (batch_size, sequence_length).
+        hidden_states = embeddings
+        for layer in self.transformer_layers:
+            hidden_states = layer(hidden_states, src_mask=mask)
 
-        Returns:
-            torch.Tensor: Output tensor of shape (batch_size, sequence_length, vocab_size).
-
-        The forward pass includes the following steps:
-        1. Embedding layer to map token IDs to embeddings.
-        2. Transpose the tensor to shape (sequence_length, batch_size, d_model) for the Transformer.
-        3. Pass the tensor through Transformer layers.
-        4. Transpose the tensor back to shape (batch_size, sequence_length, n_embd).
-        5. Apply LayerNorm.
-        6. Output layer to map to vocabulary size.
-        """
-        x = self.embedding(x)  # x shape: (batch_size, sequence_length, n_embd)
-        x = x.transpose(0, 1)
-        x = self.transformer(x, x)  # Transformer expects src and tgt, both are x here
-        x = x.transpose(0, 1)
-        x = self.ln_f(x)
-        return self.head(x)
-
-class TextDataset(Dataset):
-    def __init__(self, texts, tokenizer):
-        self.encodings = tokenizer(
-            texts,
-            max_length=128,
-            truncation=True,
-            padding='max_length',
-            return_tensors='pt'
-        )
-    def __len__(self):
-        return len(self.encodings['input_ids'])
-    def __getitem__(self, idx):
-        item = {key: tensor[idx] for key, tensor in self.encodings.items()}
-        return item
+        hidden_states = self.ln_f(hidden_states)
+        logits = self.fc_out(hidden_states.transpose(0, 1))
+        return logits  # 返回形状为 (batch_size, seq_len, vocab_size)
+    
