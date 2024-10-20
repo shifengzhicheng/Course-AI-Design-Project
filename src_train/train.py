@@ -81,11 +81,11 @@ if __name__ == '__main__':
 
 
     train_dataset = TextDataset(train_texts, tokenizer)
-    train_dataloader = DataLoader(train_dataset, batch_size=40, shuffle=True, num_workers=4)
+    train_dataloader = DataLoader(train_dataset, batch_size=32, shuffle=True, num_workers=4)
     print("Training data prepared.")
 
     val_dataset = TextDataset(val_texts, tokenizer)
-    val_dataloader = DataLoader(val_dataset, batch_size=40, shuffle=True, num_workers=1)
+    val_dataloader = DataLoader(val_dataset, batch_size=32, shuffle=True, num_workers=1)
     print("Validation data prepared.")
 
     vocab_size = len(tokenizer)
