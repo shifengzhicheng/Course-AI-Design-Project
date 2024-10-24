@@ -8,7 +8,7 @@ local
 .vscode
 
 # datasets
-gpt2_tokenizer
+#gpt2_tokenizer
 wikitext
 bookcorupus
 # C extensions
@@ -136,7 +136,7 @@ cython_debug/
 *.csv
 *.h5
 *.hdf5
-*.json
+#*.json
 *.xlsx
 
 # Model files
