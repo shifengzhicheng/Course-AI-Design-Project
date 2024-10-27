@@ -1,9 +1,11 @@
+import os
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'  # 只显示错误信息
+
 import torch
 import argparse
 import torch.nn as nn
 import torch.nn.functional as F
 from transformers import GPT2Tokenizer, GPT2LMHeadModel, GPT2Config
-
 def top_k_logits(logits, k):
     if k == 0:
         # 不进行截断
@@ -37,6 +39,7 @@ def generate_text(model, tokenizer, prompt, max_length, temperature, top_k):
     return sentence
 
 if __name__ == '__main__':
+    
     # 解析命令行参数
     parser = argparse.ArgumentParser()
     parser.add_argument('-t', '--input_text', type=str, required=True, help='Input text for generating')
@@ -46,12 +49,12 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    # 加载 tokenizer 和 NanoGPT 模型
+    # 加载 tokenizer 和 GPT2 模型
     tokenizer = GPT2Tokenizer.from_pretrained('./gpt2_tokenizer')
     config = GPT2Config.from_json_file('./gpt2_config.json')
     model = GPT2LMHeadModel(config=config)
-    #state_dict = torch.load('./gpt2_pth/gpt2_model_modified.pth')
-    state_dict = torch.load('./gpt2_pth_5epochs/gpt2_model.pth')
+    # state_dict = torch.load('./gpt2_model_modified.pth')
+    state_dict = torch.load('./gpt2_model.pth')
     model.load_state_dict(state_dict)
     model.eval()
 

@@ -5,6 +5,8 @@ numpy
 pandas
 scikit-learn
 tqdm
-matplotlib
-jupyter
 git-lfs
+torch==1.13.1
+transformers==4.40.0
+tensorboard==2.10.1
+argparse==1.4.0
