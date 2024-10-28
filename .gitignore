@@ -145,7 +145,7 @@ cython_debug/
 *.hdf5
 *.pb
 *.pt
-*.pth
+# *.pth
 *.tflite
 *.onnx
 
