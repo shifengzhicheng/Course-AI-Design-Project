@@ -98,9 +98,9 @@ The training code is located in `src_train/train.py`.
 The training of the GPT-2 model was successful, as shown in the loss curve below. The loss decreased consistently over time, stabilizing around a lower value, indicating the model's improved performance as it learned from the data.
 
 
-Initial Loss: 6.767
-Final Loss: 3.682
-Total Steps: 101,080
+Initial Loss: 6.972
+Final Loss: 2.978
+Total Steps: Approximately280k
 Training Duration: Approximately 15.4 hours
 
 ### Generated Text Samples
